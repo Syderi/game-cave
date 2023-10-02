@@ -1,6 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const context = canvas.getContext('2d');
 const livesElement = document.getElementById('lives');
+const restartButton = document.getElementById('restartButton');
 
 const lionImages = ['./assets/lion1.png', './assets/lion2.png'];
 const dogImages = ['./assets/dog1.png', './assets/dog2.png'];
@@ -11,6 +12,8 @@ const catImages = [
   './assets/cat-minus-level.png',
 ];
 
+let animationId
+let isGameOver = false;
 let isCatImmune = false; // Флаг, указывающий, имеет ли кот иммунитет
 let immuneDuration = 2000; // Длительность иммунитета в миллисекундах (5 секунд)
 let lives = 9; // Начальное количество жизней
@@ -145,6 +148,16 @@ document.addEventListener('keyup', function (event) {
   }
 });
 
+
+
+restartButton.addEventListener('click', () => {
+  isGameOver = false;
+  lives = 9; // Восстановите количество жизней или другие начальные значения
+  // Дополнительные действия для перезапуска игры
+  cancelAnimationFrame(animationId);
+  gameLoop()
+});
+
 function changeLionImage() {
   currentLionImageIndex = (currentLionImageIndex + 1) % lionImages.length;
 }
@@ -174,15 +187,13 @@ function checkCollisions() {
   }
   // Проверка столкновения кота с львом
   if (
-    catX + catWidth > lionX &&
-    catX < lionX + 100 && // Ширина льва
-    catY + 35 > lionY &&
-    catY < lionY + 100 // Высота льва
+    catX + catWidth > lionX + 20 &&
+    catX < lionX + 80 && // Ширина льва
+    catY + 15 > lionY &&
+    catY < lionY + 50 // Высота льва
   ) {
     // Столкновение кота с львом
     lives--; // Уменьшение количества жизней
-    // const livesElement = document.getElementById('lives');
-    // livesElement.textContent = `Жизни: ${lives}`;
     // Дополнительная логика при столкновении с львом, если нужно
     isCatImmune = true;
     setTimeout(() => {
@@ -192,16 +203,13 @@ function checkCollisions() {
 
   // Проверка столкновения кота с собакой
   if (
-    catX + catWidth > dogX &&
-    catX < dogX + 50 && // Ширина собаки
-    catY + 35 > dogY &&
+    catX + catWidth > dogX + 20 &&
+    catX < dogX + 10 && // Ширина собаки
+    catY + 15 > dogY &&
     catY < dogY + 50 // Высота собаки
   ) {
     // Столкновение кота с собакой
     lives--; // Уменьшение количества жизней
-    // const livesElement = document.getElementById('lives');
-    // livesElement.textContent = `Жизни: ${lives}`;
-    // Дополнительная логика при столкновении с собакой, если нужно
     isCatImmune = true;
     setTimeout(() => {
       isCatImmune = false; // Отключить иммунитет после истечения времени
@@ -211,16 +219,13 @@ function checkCollisions() {
   // Проверка столкновения кота с каждым сталактитом
   stalactites.forEach((stalactite) => {
     if (
-      catX + catWidth > stalactite.x &&
-      catX < stalactite.x + stalactiteWidth &&
+      catX + catWidth > stalactite.x - 10 &&
+      catX < stalactite.x + stalactiteWidth - 10 &&
       catY + 35 > stalactite.y &&
       catY < stalactite.y + stalactiteHeight
     ) {
       // Столкновение кота с сталактитом
       lives--; // Уменьшение количества жизней
-      // const livesElement = document.getElementById('lives');
-      // livesElement.textContent = `Жизни: ${lives}`;
-      // Дополнительная логика при столкновении с сталактитом, если нужно
       isCatImmune = true;
       setTimeout(() => {
         isCatImmune = false; // Отключить иммунитет после истечения времени
@@ -229,7 +234,18 @@ function checkCollisions() {
   });
 }
 
+function endGame() {
+  isGameOver = true;
+  cancelAnimationFrame(animationId);
+  // Дополнительные действия при завершении игры, например, вывод сообщения о завершении
+  // и кнопки перезапуска
+}
+
 function gameLoop() {
+  if (isGameOver) {
+    return;
+  }
+
   drawBackground();
   drawLion();
   drawDog();
@@ -254,7 +270,13 @@ function gameLoop() {
 
   livesElement.textContent = `Жизни: ${lives}`;
 
-  requestAnimationFrame(gameLoop); // Запуск следующего кадра анимации
+  if (lives === 0) {
+    // cancelAnimationFrame(animationId);
+    endGame()
+  }
+
+  animationId = requestAnimationFrame(gameLoop);
+  // requestAnimationFrame(gameLoop); // Запуск следующего кадра анимации
 }
 
 backgroundImage.onload = function () {
