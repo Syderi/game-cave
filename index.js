@@ -12,25 +12,61 @@ let currentLionImageIndex = 0;
 let lionX = canvas.width; // Начальная позиция льва справа
 const lionY = canvas.height - 70; // Высота нижней части холста
 
-
 let currentDogImageIndex = 0;
 let dogX = canvas.width; // Начальная позиция собаки справа
 const dogY = canvas.height - 40; // Высота нижней части холста
-
 
 let currentCatImageIndex = 0;
 let catX = 10; // Начальная позиция кота по горизонтали (левый нижний угол)
 let catY = canvas.height - 33; // Начальная позиция кота по вертикали
 let catJumping = false; // Флаг, указывающий, что кот прыгает
-let jumpHeight = 100; // Высота прыжка
+let jumpHeight = 160; // Высота прыжка
 let jumpSpeed = 5; // Скорость поднимающегося и опускающегося движения при прыжке
 let gravity = 1; // Гравитация
 const catWidth = 35; // Ширина кота
 
-
+let isStalactiteFalling = false; // Флаг, указывающий, падает ли сталактит в данный момент
+const stalactiteFallSpeed = 2; // Скорость падения сталактита
 
 const backgroundImage = new Image();
 backgroundImage.src = './assets/cave.png'; // Путь к фоновому изображению
+
+const stalactiteImage = new Image();
+stalactiteImage.src = './assets/stalactite.png'; // Путь к изображению сталактита
+
+const stalactiteWidth = 50; // Ширина сталактита
+const stalactiteHeight = 50; // Высота сталактита
+const numberOfStalactites = 20; // Количество сталактитов
+
+// Создайте массив для хранения позиций сталактитов
+const stalactites = [];
+
+// Функция для создания случайного числа в заданном диапазоне
+function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Рассчитайте начальные позиции для сталактитов
+for (let i = 0; i < numberOfStalactites; i++) {
+  const x = (i * canvas.width) / numberOfStalactites; // Равномерное распределение по ширине холста
+  const y = 0; // Наверху холста
+  stalactites.push({ x, y });
+
+  // console.log("stalactites",stalactites)
+}
+
+// Функция для отрисовки сталактитов
+function drawStalactites() {
+  stalactites.forEach((stalactite) => {
+    context.drawImage(
+      stalactiteImage,
+      stalactite.x,
+      stalactite.y,
+      stalactiteWidth,
+      stalactiteHeight
+    );
+  });
+}
 
 function drawBackground() {
   context.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
@@ -58,22 +94,25 @@ function changeCatImage(index) {
   currentCatImageIndex = index;
 }
 
-
 function jump() {
   if (!catJumping) {
     catJumping = true;
+    let jumpHeightRemaining = jumpHeight;
     let jumpInterval = setInterval(function () {
-      catY -= jumpSpeed;
-      if (catY <= canvas.height - jumpHeight) {
+      if (jumpHeightRemaining > 0) {
+        catY -= jumpSpeed;
+        jumpHeightRemaining -= jumpSpeed;
+      } else {
         clearInterval(jumpInterval);
         let fallInterval = setInterval(function () {
           catY += jumpSpeed;
-          if (catY >= canvas.height - 100) {
-            catY = canvas.height - 100;
+          if (catY >= canvas.height - 33) {
+            catY = canvas.height - 33;
             clearInterval(fallInterval);
             catJumping = false;
           }
         }, 20);
+        changeCatImage(0);
       }
     }, 20);
   }
@@ -82,10 +121,10 @@ function jump() {
 document.addEventListener('keydown', function (event) {
   if (event.key === 'ArrowLeft' && catX > 0) {
     changeCatImage(1); // Лево
-    catX -= 5; // Смещение кота влево
+    catX -= 7; // Смещение кота влево
   } else if (event.key === 'ArrowRight' && catX < canvas.width - catWidth) {
     changeCatImage(0); // Право
-    catX += 5; // Смещение кота вправо
+    catX += 7; // Смещение кота вправо
   } else if (event.key === 'ArrowUp') {
     changeCatImage(2); // Вверх
     jump();
@@ -107,13 +146,29 @@ function changeDogImage() {
   currentDogImageIndex = (currentDogImageIndex + 1) % dogImages.length;
 }
 
+let randomStalactiteIndex = getRandomNumber(0, stalactites.length - 1);
+
+// Функция для падения одного сталактита
+function dropStalactite(stalactiteIndex) {
+  const stalactite = stalactites[stalactiteIndex];
+  stalactite.y += stalactiteFallSpeed;
+
+  // Проверьте, достиг ли сталактит нижней границы холста
+  if (stalactite.y > canvas.height) {
+    // Если достиг, верните его вверху
+    stalactite.y =  0
+      randomStalactiteIndex = getRandomNumber(0, stalactites.length - 1);
+  }
+}
+
 function gameLoop() {
   drawBackground();
   drawLion();
   drawDog();
   drawCat();
-  lionX -= 1; // Скорость движения льва
-  dogX -= 1.5; // Скорость движения собаки (можете настроить по своему усмотрению)
+  drawStalactites();
+  (lionX -= 1), 5; // Скорость движения льва
+  dogX -= 2.5; // Скорость движения собаки (можете настроить по своему усмотрению)
 
   if (lionX < -100) {
     lionX = canvas.width; // Вернуть льва справа после достижения левого края
@@ -124,6 +179,8 @@ function gameLoop() {
     dogX = canvas.width; // Вернуть собаку справа после достижения левого края
     changeDogImage(); // Сменить изображение собаки
   }
+
+  dropStalactite(randomStalactiteIndex);
 
   requestAnimationFrame(gameLoop); // Запуск следующего кадра анимации
 }
