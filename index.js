@@ -188,7 +188,7 @@ function checkCollisions() {
   // Проверка столкновения кота с львом
   if (
     catX + catWidth > lionX + 20 &&
-    catX < lionX + 80 && // Ширина льва
+    catX < lionX + 50 && // Ширина льва
     catY + 15 > lionY &&
     catY < lionY + 50 // Высота льва
   ) {
