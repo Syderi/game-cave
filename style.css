@@ -6,14 +6,19 @@
 body {
   width: 100vw;
   min-height: 100vh;
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   background-image: url('./assets/big-cave.jpg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+h1 {
+  color: white;
 }
 
 #gameCanvas {

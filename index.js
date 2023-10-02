@@ -1,5 +1,6 @@
 const canvas = document.getElementById('gameCanvas');
 const context = canvas.getContext('2d');
+const livesElement = document.getElementById('lives');
 
 const lionImages = ['./assets/lion1.png', './assets/lion2.png'];
 const dogImages = ['./assets/dog1.png', './assets/dog2.png'];
@@ -7,7 +8,12 @@ const catImages = [
   './assets/cat-rigth.png',
   './assets/cat-left.png',
   './assets/cat-up.png',
+  './assets/cat-minus-level.png',
 ];
+
+let isCatImmune = false; // Флаг, указывающий, имеет ли кот иммунитет
+let immuneDuration = 2000; // Длительность иммунитета в миллисекундах (5 секунд)
+let lives = 9; // Начальное количество жизней
 let currentLionImageIndex = 0;
 let lionX = canvas.width; // Начальная позиция льва справа
 const lionY = canvas.height - 70; // Высота нижней части холста
@@ -87,6 +93,7 @@ function drawDog() {
 function drawCat() {
   const catImage = new Image();
   catImage.src = catImages[currentCatImageIndex];
+  if (isCatImmune) catImage.src = catImages[3];
   context.drawImage(catImage, catX, catY, catWidth, 35); // Размер и позиция кота на холсте
 }
 
@@ -156,9 +163,70 @@ function dropStalactite(stalactiteIndex) {
   // Проверьте, достиг ли сталактит нижней границы холста
   if (stalactite.y > canvas.height) {
     // Если достиг, верните его вверху
-    stalactite.y =  0
-      randomStalactiteIndex = getRandomNumber(0, stalactites.length - 1);
+    stalactite.y = 0;
+    randomStalactiteIndex = getRandomNumber(0, stalactites.length - 1);
   }
+}
+
+function checkCollisions() {
+  if (isCatImmune) {
+    return; // Если кот иммунен, прервать проверку столкновений
+  }
+  // Проверка столкновения кота с львом
+  if (
+    catX + catWidth > lionX &&
+    catX < lionX + 100 && // Ширина льва
+    catY + 35 > lionY &&
+    catY < lionY + 100 // Высота льва
+  ) {
+    // Столкновение кота с львом
+    lives--; // Уменьшение количества жизней
+    // const livesElement = document.getElementById('lives');
+    // livesElement.textContent = `Жизни: ${lives}`;
+    // Дополнительная логика при столкновении с львом, если нужно
+    isCatImmune = true;
+    setTimeout(() => {
+      isCatImmune = false; // Отключить иммунитет после истечения времени
+    }, immuneDuration);
+  }
+
+  // Проверка столкновения кота с собакой
+  if (
+    catX + catWidth > dogX &&
+    catX < dogX + 50 && // Ширина собаки
+    catY + 35 > dogY &&
+    catY < dogY + 50 // Высота собаки
+  ) {
+    // Столкновение кота с собакой
+    lives--; // Уменьшение количества жизней
+    // const livesElement = document.getElementById('lives');
+    // livesElement.textContent = `Жизни: ${lives}`;
+    // Дополнительная логика при столкновении с собакой, если нужно
+    isCatImmune = true;
+    setTimeout(() => {
+      isCatImmune = false; // Отключить иммунитет после истечения времени
+    }, immuneDuration);
+  }
+
+  // Проверка столкновения кота с каждым сталактитом
+  stalactites.forEach((stalactite) => {
+    if (
+      catX + catWidth > stalactite.x &&
+      catX < stalactite.x + stalactiteWidth &&
+      catY + 35 > stalactite.y &&
+      catY < stalactite.y + stalactiteHeight
+    ) {
+      // Столкновение кота с сталактитом
+      lives--; // Уменьшение количества жизней
+      // const livesElement = document.getElementById('lives');
+      // livesElement.textContent = `Жизни: ${lives}`;
+      // Дополнительная логика при столкновении с сталактитом, если нужно
+      isCatImmune = true;
+      setTimeout(() => {
+        isCatImmune = false; // Отключить иммунитет после истечения времени
+      }, immuneDuration);
+    }
+  });
 }
 
 function gameLoop() {
@@ -181,6 +249,10 @@ function gameLoop() {
   }
 
   dropStalactite(randomStalactiteIndex);
+
+  checkCollisions();
+
+  livesElement.textContent = `Жизни: ${lives}`;
 
   requestAnimationFrame(gameLoop); // Запуск следующего кадра анимации
 }
