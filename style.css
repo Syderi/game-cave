@@ -1,0 +1,22 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  background-image: url('./assets/big-cave.jpg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+backdrop-filter: blur(10px);
+}
+
+#gameCanvas {
+  display: block;
+  margin: 50px auto 0;
+}
