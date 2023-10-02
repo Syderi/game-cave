@@ -219,7 +219,7 @@ function checkCollisions() {
   // Проверка столкновения кота с каждым сталактитом
   stalactites.forEach((stalactite) => {
     if (
-      catX + catWidth > stalactite.x - 10 &&
+      catX + catWidth > stalactite.x + 10 &&
       catX < stalactite.x + stalactiteWidth - 10 &&
       catY + 35 > stalactite.y &&
       catY < stalactite.y + stalactiteHeight
