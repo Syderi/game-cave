@@ -17,19 +17,27 @@ body {
   backdrop-filter: blur(10px);
 }
 
-h1 {
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
   color: white;
+  font-size: 30px;
 }
 
-#restartButton{
-margin-top: 20px;
-width: 250px;
-height: 60px;
-cursor: pointer;
-background-color: cadetblue;
-font-size: 14px;
-border-radius: 5px;
-outline: none;
+h1 {
+  font-size: 30px;
+}
+
+#restartButton {
+  margin-top: 20px;
+  width: 250px;
+  height: 60px;
+  cursor: pointer;
+  background-color: cadetblue;
+  font-size: 14px;
+  border-radius: 5px;
+  outline: none;
 }
 
 #gameCanvas {

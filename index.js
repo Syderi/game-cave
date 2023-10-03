@@ -2,6 +2,7 @@ const canvas = document.getElementById('gameCanvas');
 const context = canvas.getContext('2d');
 const livesElement = document.getElementById('lives');
 const restartButton = document.getElementById('restartButton');
+const timerElement = document.getElementById('timer');
 
 const lionImages = ['./assets/lion1.png', './assets/lion2.png'];
 const dogImages = ['./assets/dog1.png', './assets/dog2.png'];
@@ -12,11 +13,14 @@ const catImages = [
   './assets/cat-minus-level.png',
 ];
 
-let animationId
+let startTime = Date.now(); // Запоминаем время начала игры
+let gameTime = 60; // Время в секундах (2 минуты)
+let lives = 9; // Начальное количество жизней
+let animationId;
 let isGameOver = false;
 let isCatImmune = false; // Флаг, указывающий, имеет ли кот иммунитет
 let immuneDuration = 2000; // Длительность иммунитета в миллисекундах (5 секунд)
-let lives = 9; // Начальное количество жизней
+let time = '0:00'; // Начальное количество жизней
 let currentLionImageIndex = 0;
 let lionX = canvas.width; // Начальная позиция льва справа
 const lionY = canvas.height - 70; // Высота нижней части холста
@@ -49,6 +53,13 @@ const numberOfStalactites = 20; // Количество сталактитов
 
 // Создайте массив для хранения позиций сталактитов
 const stalactites = [];
+
+function updateTimer(gameTime) {
+  const minutes = Math.floor(gameTime / 60);
+  const seconds = gameTime % 60;
+  const formattedTime = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  timerElement.textContent = formattedTime;
+}
 
 // Функция для создания случайного числа в заданном диапазоне
 function getRandomNumber(min, max) {
@@ -148,14 +159,16 @@ document.addEventListener('keyup', function (event) {
   }
 });
 
-
-
 restartButton.addEventListener('click', () => {
+  context.clearRect(0, 0, canvas.width, canvas.height);
   isGameOver = false;
-  lives = 9; // Восстановите количество жизней или другие начальные значения
+  gameTime = 60;
+  startTime = Date.now();
   // Дополнительные действия для перезапуска игры
   cancelAnimationFrame(animationId);
-  gameLoop()
+  lives = 9; // Восстановите количество жизней или другие начальные значения
+  gameLoop();
+  lives = 9; // Восстановите количество жизней или другие начальные значения
 });
 
 function changeLionImage() {
@@ -234,16 +247,64 @@ function checkCollisions() {
   });
 }
 
-function endGame() {
+function endGame(key = false) {
   isGameOver = true;
   cancelAnimationFrame(animationId);
-  // Дополнительные действия при завершении игры, например, вывод сообщения о завершении
-  // и кнопки перезапуска
+
+  if (key) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    const finalCatImage = new Image();
+    finalCatImage.src = './assets/final-cat.jpg';
+
+    finalCatImage.onload = function () {
+      // Рассчитываем размеры для отображения картинки по центру
+      const aspectRatio = finalCatImage.width / finalCatImage.height;
+      const maxWidth = canvas.width;
+      const maxHeight = canvas.height;
+
+      let newWidth = maxWidth;
+      let newHeight = newWidth / aspectRatio;
+
+      if (newHeight > maxHeight) {
+        newHeight = maxHeight;
+        newWidth = newHeight * aspectRatio;
+      }
+
+      // Рассчитываем позицию для отображения картинки по центру
+      const x = (canvas.width - newWidth) / 2;
+      const y = (canvas.height - newHeight) / 2;
+
+      // Отображаем картинку по центру
+      context.drawImage(finalCatImage, x, y, newWidth, newHeight);
+    };
+  }
 }
 
 function gameLoop() {
   if (isGameOver) {
     return;
+  }
+
+  const currentTime = Date.now();
+  const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
+
+  if (elapsedSeconds < gameTime + 1) {
+    console.log('1000elapsedSeconds===', elapsedSeconds);
+    console.log('1000gameTime===', gameTime);
+    // Время игры не закончилось, обновляем оставшееся время
+    const remainingTime = gameTime - elapsedSeconds;
+    // Отобразить оставшееся время на странице или выполнить другие действия
+    updateTimer(remainingTime); // Обновление таймера
+  } else {
+    console.log('2000elapsedSeconds===', elapsedSeconds);
+    console.log('2000gameTime===', gameTime);
+    // Игра закончена, выполняйте действия по окончанию игры
+    endGame(true);
+    return; // Прерываем gameLoop
+  }
+
+  if (lives === 0) {
+    endGame();
   }
 
   drawBackground();
@@ -270,13 +331,7 @@ function gameLoop() {
 
   livesElement.textContent = `Жизни: ${lives}`;
 
-  if (lives === 0) {
-    // cancelAnimationFrame(animationId);
-    endGame()
-  }
-
   animationId = requestAnimationFrame(gameLoop);
-  // requestAnimationFrame(gameLoop); // Запуск следующего кадра анимации
 }
 
 backgroundImage.onload = function () {
