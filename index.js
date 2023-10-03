@@ -72,7 +72,6 @@ for (let i = 0; i < numberOfStalactites; i++) {
   const y = 0; // Наверху холста
   stalactites.push({ x, y });
 
-  // console.log("stalactites",stalactites)
 }
 
 // Функция для отрисовки сталактитов
@@ -289,15 +288,11 @@ function gameLoop() {
   const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
 
   if (elapsedSeconds < gameTime + 1) {
-    console.log('1000elapsedSeconds===', elapsedSeconds);
-    console.log('1000gameTime===', gameTime);
     // Время игры не закончилось, обновляем оставшееся время
     const remainingTime = gameTime - elapsedSeconds;
     // Отобразить оставшееся время на странице или выполнить другие действия
     updateTimer(remainingTime); // Обновление таймера
   } else {
-    console.log('2000elapsedSeconds===', elapsedSeconds);
-    console.log('2000gameTime===', gameTime);
     // Игра закончена, выполняйте действия по окончанию игры
     endGame(true);
     return; // Прерываем gameLoop
